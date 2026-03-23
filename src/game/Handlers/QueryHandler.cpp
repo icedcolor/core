@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (C) 2005-2011 MaNGOS <http://getmangos.com/>
  * Copyright (C) 2009-2011 MaNGOSZero <https://github.com/mangos/zero>
  * Copyright (C) 2011-2016 Nostalrius <https://nostalrius.org>
@@ -30,6 +30,7 @@
 #include "ObjectMgr.h"
 #include "ObjectGuid.h"
 #include "Player.h"
+#pragma execution_character_set("utf-8")
 
 void WorldSession::SendNameQueryOpcode(Player* p)
 {
@@ -368,8 +369,8 @@ void WorldSession::HandleNpcTextQueryOpcode(WorldPacket& recv_data)
         for (uint32 i = 0; i < 8; ++i)
         {
             data << float(0);
-            data << "Greetings $N";
-            data << "Greetings $N";
+            data << "你好 $N";
+            data << "你好 $N";
             data << uint32(0);
             data << uint32(0);
             data << uint32(0);
@@ -414,8 +415,8 @@ void WorldSession::HandleNpcTextQueryOpcode(WorldPacket& recv_data)
             else
             {
                 data << float(0);
-                data << "Greetings $N";
-                data << "Greetings $N";
+                data << "你好 $N";
+                data << "你好 $N";
                 data << uint32(0);
                 data << uint32(0);
                 data << uint32(0);

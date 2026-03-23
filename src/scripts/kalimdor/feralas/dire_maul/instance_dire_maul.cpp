@@ -1,10 +1,12 @@
-/* Copyright (C) 2009 - 2010 Nostalrius <http://nostalrius.ath.cx/>
+﻿/* Copyright (C) 2009 - 2010 Nostalrius <http://nostalrius.ath.cx/>
  * Auteur        : Daemon, Chakor
  * All rights reserved */
 
 #include "scriptPCH.h"
 #include "dire_maul.h"
 
+#pragma execution_character_set("utf-8")
+# pragma warning (disable:4819)
 //#define DEBUG_ON
 
 void EnableCreature(Creature* pCreature)
@@ -927,6 +929,8 @@ enum
     GOSSIP_MENU_2               = 6883,
 
     GO_KNOTS_BALL_AND_CHAIN     = 179511,
+
+    GO_KNOTS_CACHE = 179501,
 };
 
 struct npc_knot_thimblejackAI : public ScriptedAI
@@ -1001,7 +1005,7 @@ bool GossipHello_npc_knot_thimblejack(Player* pPlayer, Creature* pCreature)
     if (pCreature->IsQuestGiver())
         pPlayer->PrepareQuestMenu(pCreature->GetObjectGuid());
 
-    pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Why should I bother fixing the trap? Why not just eliminate the guard the old fashioned way?", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+    pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "为什么我要做修好陷阱这样的麻烦事儿？为什么不按老办法杀死守卫？", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
 
     if (pPlayer->GetQuestRewardStatus(QUEST_GORDOK_OGRE_SUIT) && pPlayer->GetQuestStatus(QUEST_GORDOK_OGRE_SUIT) == QUEST_STATUS_COMPLETE)
     {
@@ -1038,8 +1042,15 @@ bool QuestRewarded_npc_knot_thimblejack(Player* pPlayer, Creature* pCreature, Qu
         {
             if (pCreature)
             {
-                if (GameObject* pGo = pCreature->FindNearestGameObject(GO_KNOTS_BALL_AND_CHAIN, 20.0f))
-                    pGo->Delete();
+                if (GameObject* pGo_1 = pCreature->FindNearestGameObject(GO_KNOTS_BALL_AND_CHAIN, 20.0f))
+                     pGo_1->Delete();
+
+                if (GameObject* pGo_2 = pCreature->FindNearestGameObject(GO_KNOTS_CACHE, 20.0f))
+                {
+                    pPlayer->SummonGameObject(GO_KNOTS_CACHE, pGo_2->GetPositionX(), pGo_2->GetPositionY(), pGo_2->GetPositionZ(), 0.0f, 0, 0, 0, 0, 43200);
+                    pGo_2->Delete();
+                }  //厄运宝箱
+
                 pCreature->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP | UNIT_NPC_FLAG_QUESTGIVER);
                 //pCreature->SetActiveObjectState(true);
                 pCreature->GetMotionMaster()->MovePoint(1, 518.325f, 542.00f, -23.901f);
@@ -1093,14 +1104,14 @@ struct GordokBruteAI : public ScriptedAI
         switch (yellChance)
         {
             case 0:
-                m_creature->MonsterSay("Me smash! You die!");
+                m_creature->MonsterSay("你去死吧！");
                 break;
             case 1:
-                m_creature->MonsterSay("The Great One will smash you!");
+                m_creature->MonsterSay("我要撕碎你！");
                 break;
             case 2:
                 char eMessage[100];
-                sprintf(eMessage, "Raaar!!! Me smash %s!",pWho->GetName());
+                sprintf(eMessage, "啊！！！我要干掉%s！",pWho->GetName());
                 m_creature->MonsterSay(eMessage);
                 break;
             default:
@@ -1136,7 +1147,7 @@ struct GordokBruteAI : public ScriptedAI
         if (m_creature->GetHealthPercent() < 30.0f && !m_bEnrage)
         {
             char eMessage[100];
-            sprintf(eMessage, "Gordok Brute puts his club away and begins swinging wildly!");
+            sprintf(eMessage, "戈多克蛮兵放下木棒，开始狂野地摇摆!");
             m_creature->LoadEquipment(0, true);
             m_creature->MonsterTextEmote(eMessage, nullptr, false);
 
@@ -1799,7 +1810,7 @@ struct boss_alzzin_the_wildshaperAI : ScriptedAI
 
         m_uiPhaseTimer             = urand(12000, 15000);
         m_uiChPhase = 0;
-        m_uiEvadeTimer             = 3000;
+        m_uiEvadeTimer             = 300000;
         m_bSummoned                = false;
 
         m_bCastThorns = DoCastSpellIfCan(m_creature, SPELL_THORNS) != CAST_OK;
@@ -1942,7 +1953,7 @@ struct boss_alzzin_the_wildshaperAI : ScriptedAI
                 // Say something
                 m_creature->AI()->EnterEvadeMode();
             }
-            m_uiEvadeTimer = 3000;
+            m_uiEvadeTimer = 300000;
         }
         else
             m_uiEvadeTimer -= uiDiff;

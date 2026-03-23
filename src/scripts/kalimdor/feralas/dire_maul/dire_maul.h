@@ -1,10 +1,10 @@
-/* Copyright (C) 2009 - 2010 Nostalrius <http://nostalrius.ath.cx/>
+﻿/* Copyright (C) 2009 - 2010 Nostalrius <http://nostalrius.ath.cx/>
  * Auteur        : Daemon, Chakor
  * All rights reserved */
 
 #ifndef __DEF_DIRE_MAUL_HEADER
 #define __DEF_DIRE_MAUL_HEADER
-
+#pragma execution_character_set("utf-8")
 enum
 {
     MAX_CRISTALS              = 5,
@@ -95,10 +95,10 @@ struct sGossipMenuItems
 
 const sGossipMenuItems sKromcrushGossips[4] =
 {
-    { 6913, "Um, I'm taking some prisoners we found outside before the king for punishment." },
-    { 6915, "Er... that's how I found them. I wanted to show the king that they were a threat. Say Captain... I overhead Guard Fengus calling you a fat, useless knoll lover. " },
-    { 6914, "So, now that I'm the king... what have you got for me?!" },
-    { 6920, "This sounds like a task worthy of the new king!" }
+    { 6913, "嗯,我要把这些人带到国王那里去听候发落." },
+    { 6915, "呃...我就是这样找到他们的.我想告诉国王他们是个威胁!我跟你说啊,头...我无意中听到卫兵芬古斯说你是个肥胖无用的恋豺狼人癖. " },
+    { 6914, "那么,现在我是国王啦...你给我带来了什么?!" },
+    { 6920, "这听起来是个值得去做的任务!" }
 };
 
 const sGossipMenuItems sMizzleGossips[4] =

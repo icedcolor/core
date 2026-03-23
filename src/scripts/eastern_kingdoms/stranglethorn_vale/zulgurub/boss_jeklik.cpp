@@ -1,4 +1,4 @@
-/* Copyright (C) 2006 - 2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+﻿/* Copyright (C) 2006 - 2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -23,7 +23,7 @@ EndScriptData */
 
 #include "scriptPCH.h"
 #include "zulgurub.h"
-
+#pragma execution_character_set("utf-8")
 enum
 {
     SAY_AGGRO               = 10027,
@@ -520,9 +520,9 @@ struct npc_guru_bat_riderAI : public ScriptedAI
         {
             GoingToExplose = true;
             if (urand(0, 1))
-                m_creature->MonsterTextEmote("Gurubashi Bat Rider becomes fully engulfed in flames.", nullptr, false);
+                m_creature->MonsterTextEmote("觅血者前锋完全被烈焰吞噬了.", nullptr, false);
             else
-                m_creature->MonsterTextEmote("Gurubashi Bat Rider gets a crazed look in his eye.", nullptr, false);
+                m_creature->MonsterTextEmote("觅血者前锋的双眼射出了疯狂的光芒.", nullptr, false);
             m_creature->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FEAR, true); // fear immunity
             m_creature->CastSpell(m_creature, SPELL_EXPLOSION, false);
         }

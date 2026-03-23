@@ -43,7 +43,7 @@ enum blySpells
     SPELL_REVENGE              = 12170
 };
 
-#define GOSSIP_BLY                  "That's it! I'm tired of helping you out.  It's time we settled things on the battlefield!"
+#define GOSSIP_BLY                  "就这么办吧！我实在是厌倦了事事都帮你。我们到战场上去解决问题吧！"
 
 
 struct npc_sergeant_blyAI : public ScriptedAI
@@ -239,7 +239,7 @@ enum weegliSays
     SAY_CHIEF_UKORZ_DOOR = 6067
 };
 
-#define GOSSIP_WEEGLI               "Will you blow up that door now?"
+#define GOSSIP_WEEGLI               "你现在可以炸开那扇门了吗？"
 
 
 struct npc_weegli_blastfuseAI : public ScriptedAI

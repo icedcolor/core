@@ -1,4 +1,4 @@
-/* Copyright (C) 2006 - 2011 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+﻿/* Copyright (C) 2006 - 2011 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -16,6 +16,7 @@
 
 #include "scriptPCH.h"
 #include "blackwing_lair.h"
+#pragma execution_character_set("utf-8")
 
 enum Vaelestrasz : uint32
 {
@@ -63,7 +64,14 @@ enum Vaelestrasz : uint32
 };
 
 // Coords used to spawn Nefarius at the throne
+//<<<<<<< Updated upstream
 static constexpr float aNefariusSpawnLoc[4] = { -7466.16f, -1040.80f, 412.053f, 2.14675f};
+//=======
+//static float const aNefariusSpawnLoc[4] = { -7466.16f, -1040.80f, 412.053f, 2.14675f};
+
+//#define GOSSIP_ITEM_VAEL_1         "我做不到，瓦拉斯塔兹！一定有什么办法可以拯救你！"
+//#define GOSSIP_ITEM_VAEL_2         "瓦拉斯塔兹，不！！！"
+//>>>>>>> Stashed changes
 
 struct boss_vaelAI : public ScriptedAI
 {

@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (C) 2005-2011 MaNGOS <http://getmangos.com/>
  * Copyright (C) 2009-2011 MaNGOSZero <https://github.com/mangos/zero>
  * Copyright (C) 2011-2016 Nostalrius <https://nostalrius.org>
@@ -31,6 +31,7 @@
 #include "mersennetwister/MersenneTwister.h"
 
 #include <cstdarg>
+#pragma execution_character_set("utf-8")
 
 #if PLATFORM == PLATFORM_WINDOWS
 #include <Windows.h>
@@ -260,9 +261,9 @@ std::string secsToTimeString(time_t timeInSecs, bool shortText, bool hoursOnly)
         if (shortText)
             ss << "d";
         else if (days == 1)
-            ss << " Day ";
+            ss << " 天 ";
         else
-            ss << " Days ";
+            ss << " 天 ";
     }
     if(hours || hoursOnly)
     {
@@ -270,9 +271,9 @@ std::string secsToTimeString(time_t timeInSecs, bool shortText, bool hoursOnly)
         if (shortText)
             ss << "h";
         else if (hours <= 1)
-            ss << " Hour ";
+            ss << " 小时 ";
         else
-            ss << " Hours ";
+            ss << " 小时 ";
     }
     if(!hoursOnly)
     {
@@ -282,9 +283,9 @@ std::string secsToTimeString(time_t timeInSecs, bool shortText, bool hoursOnly)
             if (shortText)
                 ss << "m";
             else if (minutes == 1)
-                ss << " Minute ";
+                ss << " 分 ";//分
             else
-                ss << " Minutes ";
+                ss << " 分 ";
         }
         if (secs || (!days && !hours && !minutes))
         {
@@ -292,9 +293,9 @@ std::string secsToTimeString(time_t timeInSecs, bool shortText, bool hoursOnly)
             if (shortText)
                 ss << "s";
             else if (secs <= 1)
-                ss << " Second.";
+                ss << " 秒 ";//秒
             else
-                ss << " Seconds.";
+                ss << " 秒 ";
         }
     }
 

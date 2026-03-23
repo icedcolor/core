@@ -122,6 +122,7 @@ struct boss_cannon_master_willeyAI : public ScriptedAI
 
     void Aggro(Unit* pWho) override
     {
+        m_creature->MonsterYell("别让他们突破我们的防线！");
         ToggleGate(CLOSED);
     }
 

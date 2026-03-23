@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (C) 2005-2011 MaNGOS <http://getmangos.com/>
  * Copyright (C) 2009-2011 MaNGOSZero <https://github.com/mangos/zero>
  * Copyright (C) 2011-2016 Nostalrius <https://nostalrius.org>
@@ -86,6 +86,7 @@
 #include "RealmZone.h"
 #include "IO/Multithreading/CreateThread.h"
 
+#pragma execution_character_set("utf-8")
 #include <chrono>
 
 INSTANTIATE_SINGLETON_1(World);
@@ -479,7 +480,8 @@ void World::LoadConfigSettings(bool reload)
 
     // Read the player limit and the Message of the day from the config file
     SetPlayerLimit(sConfig.GetIntDefault("PlayerLimit", DEFAULT_PLAYER_LIMIT), true);
-    SetMotd(sConfig.GetStringDefault("Motd", "Welcome to the Massive Network Game Object Server.") + std::string("\n") + std::string(GetPatchName()) + std::string(" is now live!"));
+ //   SetMotd(sConfig.GetStringDefault("Motd", "Welcome to the Massive Network Game Object Server.") + std::string("\n") + std::string(GetPatchName()) + std::string(" 现已开启!"));  //登录提示阶段
+    SetMotd(sConfig.GetStringDefault("欢迎来到艾泽拉斯！", "欢迎来到艾泽拉斯！") + std::string("\n"));
 
     // Read all rates from the config file
     setConfigPos(CONFIG_FLOAT_RATE_HEALTH,               "Rate.Health", 1.0f);
@@ -1269,27 +1271,27 @@ char const* World::GetPatchName() const
     switch(GetWowPatch())
     {
         case 0:
-            return "Patch 1.2: Mysteries of Maraudon";
+            return "1.2 版本 : 玛拉顿之谜";
         case 1:
-            return "Patch 1.3: Ruins of the Dire Maul";
+            return "1.3 版本 : 厄运之槌的废墟";
         case 2:
-            return "Patch 1.4: The Call to War";
+            return "1.4 版本 : 战争的召唤";
         case 3:
-            return "Patch 1.5: Battlegrounds";
+            return "1.5 版本 : 战场争锋";
         case 4:
-            return "Patch 1.6: Assault on Blackwing Lair";
+            return "1.6 版本 : 突袭黑翼之巢";
         case 5:
-            return "Patch 1.7: Rise of the Blood God";
+            return "1.7 版本 : 血神的崛起";
         case 6:
-            return "Patch 1.8: Dragons of Nightmare";
+            return "1.8 版本 : 梦魇之龙";
         case 7:
-            return "Patch 1.9: The Gates of Ahn'Qiraj";
+            return "1.9 版本 : 安其拉之门";
         case 8:
-            return "Patch 1.10: Storms of Azeroth";
+            return "1.10 版本 : 艾泽拉斯的风暴";
         case 9:
-            return "Patch 1.11: Shadow of the Necropolis";
+            return "1.11 版本 : 纳克萨玛斯之影";
         case 10:
-            return "Patch 1.12: Drums of War";
+            return "1.12 版本 : 战鼓震天";
     }
 
     return "Invalid Patch!";
@@ -1887,15 +1889,15 @@ void World::SetInitialWorldSettings()
 
     sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "");
     sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "==========================================================");
-    sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "Current content is set to %s.", GetPatchName());
-    sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "Supported client build is set to %u.", SUPPORTED_CLIENT_BUILD);
+    sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "当前内容设置为 %s.", GetPatchName());
+    sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "当前客户端版本为 %u.", SUPPORTED_CLIENT_BUILD);
     sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "==========================================================");
     sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "");
 
-    sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "World initialized.");
+    sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "世界已初始化.");
 
     uint32 uStartInterval = WorldTimer::getMSTimeDiff(uStartTime, WorldTimer::getMSTime());
-    sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "SERVER STARTUP TIME: %i minutes %i seconds", uStartInterval / 60000, (uStartInterval % 60000) / 1000);
+    sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "服务器启动时间: %i 分 %i 秒", uStartInterval / 60000, (uStartInterval % 60000) / 1000);
 }
 
 void World::DetectDBCLang()

@@ -1,4 +1,4 @@
-/* Copyright (C) 2006 - 2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+﻿/* Copyright (C) 2006 - 2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -23,6 +23,7 @@ EndScriptData */
 
 #include "scriptPCH.h"
 #include "stratholme.h"
+#pragma execution_character_set("utf-8")
 
 enum
 {
@@ -148,7 +149,11 @@ struct boss_dathrohan_balnazzarAI : public ScriptedAI
 
     void JustDied(Unit* Victim) override
     {
+
         DoScriptText(SAY_DATHROHAN_DEATH, m_creature);
+
+  //     m_creature->MonsterSay("诅咒你们凡人！我所有的复仇计划，我所有的仇恨……都被烧成了灰烬……");
+
         
         static uint32 uiCount = sizeof(m_aSummonPoint) / sizeof(SummonDef);
 
@@ -172,7 +177,11 @@ struct boss_dathrohan_balnazzarAI : public ScriptedAI
 
     void Aggro(Unit* /*pWho*/) override
     {
+
         DoScriptText(SAY_DATHROHAN_AGGRO, m_creature);
+
+     //   m_creature->MonsterYell("你弄坏了我耗费数年才创造出的东西！我要杀了你！");
+
     }
 
     void UpdateAI(uint32 const uiDiff) override
@@ -235,7 +244,11 @@ struct boss_dathrohan_balnazzarAI : public ScriptedAI
             {
                 if (m_uiTransform_Timer <= uiDiff)
                 {
+
                     DoScriptText(SAY_DATHROHAN_TRANSFORM, m_creature);
+
+            //        m_creature->MonsterYell("你们这些蠢货以为可以这么容易就打败我吗？看看纳斯雷兹姆的真正力量吧！");
+
                     m_uiTransform_Timer = 0;
                 }
                 else

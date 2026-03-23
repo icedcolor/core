@@ -133,7 +133,7 @@ struct npc_grimstoneAI : public npc_escortAI
         m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_SPAWNING);
 
         EventPhase = 0;
-        Event_Timer = 1000;
+        Event_Timer = 10000;
 
         MobCount = 0;
         MobDeath_Timer = 0;
@@ -418,7 +418,7 @@ struct npc_grimstoneAI : public npc_escortAI
                         break;
                     case 6:
                         SummonRingMob();
-                        Event_Timer = 12000;
+                        Event_Timer = 60000;
                         break;
                     case 7:
                         MobSpawnId = urand(0, 5);

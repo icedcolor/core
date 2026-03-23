@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (C) 2016 Elysium Project <https://elysium-project.org>
  */
 
@@ -582,7 +582,7 @@ void HonorMaintenancer::CheckMaintenanceDay()
 {
     if (sWorld.GetGameDay() >= m_nextMaintenanceDay && !m_markerToStart)
     {
-        sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "HonorMaintenancer: Server needs to be restarted to perform honor rank calculations.");
+        sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "荣誉维护者: 需要重启服务器才能执行荣誉等级计算.");
 
         // Restart 15 minutes after honor weekend by server time
         if (sWorld.getConfig(CONFIG_BOOL_AUTO_HONOR_RESTART))

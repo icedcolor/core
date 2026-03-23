@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (C) 2005-2011 MaNGOS <http://getmangos.com/>
  * Copyright (C) 2009-2011 MaNGOSZero <https://github.com/mangos/zero>
  * Copyright (C) 2011-2016 Nostalrius <https://nostalrius.org>
@@ -26,6 +26,7 @@
 #include "WorldPacket.h"
 #include "WorldSession.h"
 #include "Formulas.h"
+#pragma execution_character_set("utf-8")
 
 GossipMenu::GossipMenu(WorldSession* session) : m_session(session)
 {
@@ -308,8 +309,8 @@ void PlayerMenu::SendTalking(uint32 textID)
         for (uint32 i = 0; i < 8; ++i)
         {
             data << float(0);
-            data << "Greetings $N";
-            data << "Greetings $N";
+            data << "你好 $N";
+            data << "你好 $N";
             data << uint32(0);
             data << uint32(0);
             data << uint32(0);
@@ -354,8 +355,8 @@ void PlayerMenu::SendTalking(uint32 textID)
             else
             {
                 data << float(0);
-                data << "Greetings $N";
-                data << "Greetings $N";
+                data << "你好 $N";
+                data << "你好 $N";
                 data << uint32(0);
                 data << uint32(0);
                 data << uint32(0);

@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (C) 2005-2011 MaNGOS <http://getmangos.com/>
  * Copyright (C) 2009-2011 MaNGOSZero <https://github.com/mangos/zero>
  * Copyright (C) 2011-2016 Nostalrius <https://nostalrius.org>
@@ -1313,7 +1313,8 @@ bool Pet::InitStatsForLevel(uint32 petlevel, Unit const* owner)
     if (sWorld.GetWowPatch() < WOW_PATCH_109 && sWorld.getConfig(CONFIG_BOOL_ACCURATE_PETS))
         SetMeleeDamageSchool(SpellSchools(cinfo->damage_school));
     else
-        SetMeleeDamageSchool(SPELL_SCHOOL_NORMAL);
+        // SetMeleeDamageSchool(SPELL_SCHOOL_NORMAL);
+        SetMeleeDamageSchool(SpellSchools(cinfo->damage_school));//鲁伯斯暗影伤害
 
     // Nostalrius: pre-2.0: normalisation de la vitesse d'attaque des pets.
     SetAttackTime(BASE_ATTACK, cinfo->base_attack_time); //BASE_ATTACK_TIME);
@@ -1360,16 +1361,44 @@ bool Pet::InitStatsForLevel(uint32 petlevel, Unit const* owner)
 
     switch (GetPetType())
     {
-        case SUMMON_PET:
+        case SUMMON_PET:  
         {
+            uint64 warlock_spell_power = owner->IsPlayer() ? owner->GetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_HOLY) : 0;  //术士宠物
+            uint64 warlock_max_hp = owner->IsPlayer() ? owner->GetMaxHealth() : 0;
+            uint64 warlock_max_mp = owner->IsPlayer() ? owner->GetMaxPower(POWER_MANA) : 0;
+            uint64 warlock_armor = owner->IsPlayer() ? owner->GetArmor() : 0;
+
             PetLevelInfo const* pInfo = sObjectMgr.GetPetLevelInfo(creatureId, petlevel);
             CreatureClassLevelStats const* pCLS = GetClassLevelStats();
 
             // damage is only set in db for some creatures
             if (pInfo && pInfo->dmgMin && pInfo->dmgMax)
             {
-                SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, damageMod * pInfo->dmgMin);
-                SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, damageMod * pInfo->dmgMax);
+                if(owner->IsPlayer() && creatureId == 416)
+                {
+                    SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float(damageMod * (pInfo->dmgMin + warlock_spell_power / 7) * (float)GetAttackTime(BASE_ATTACK) / 2000));
+                    SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(damageMod * (pInfo->dmgMax + warlock_spell_power / 7) * (float)GetAttackTime(BASE_ATTACK) / 2000));
+                }
+                else if(owner->IsPlayer() && creatureId == 1860)
+                {
+                    SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float(damageMod * (pInfo->dmgMin + warlock_spell_power / 7) * (float)GetAttackTime(BASE_ATTACK) / 2000));
+                    SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(damageMod * (pInfo->dmgMax + warlock_spell_power / 7) * (float)GetAttackTime(BASE_ATTACK) / 2000));
+                }
+                else if(owner->IsPlayer() && creatureId == 1863)
+                {
+                    SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float(damageMod * (pInfo->dmgMin + warlock_spell_power / 7) * (float)GetAttackTime(BASE_ATTACK) / 2000));
+                    SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(damageMod * (pInfo->dmgMax + warlock_spell_power / 7) * (float)GetAttackTime(BASE_ATTACK) / 2000));
+                }
+                else if(owner->IsPlayer() && creatureId == 417)
+                {
+                    SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float(damageMod * (pInfo->dmgMin + warlock_spell_power / 7) * (float)GetAttackTime(BASE_ATTACK) / 2000));
+                    SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(damageMod * (pInfo->dmgMax + warlock_spell_power / 7) * (float)GetAttackTime(BASE_ATTACK) / 2000));
+                }
+                else
+                {
+                    SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, damageMod * pInfo->dmgMin);
+                    SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, damageMod * pInfo->dmgMax);
+                }
             }
             else
             {
@@ -1380,14 +1409,56 @@ bool Pet::InitStatsForLevel(uint32 petlevel, Unit const* owner)
             }
 
             if (pInfo && pInfo->armor)
-                SetCreateResistance(SPELL_SCHOOL_NORMAL, int32(pInfo->armor));
+                if(owner->IsPlayer() && creatureId == 416)
+                {
+                    SetCreateResistance(SPELL_SCHOOL_NORMAL, int32(pInfo->armor + warlock_armor * 1.05));
+                }
+                else if(owner->IsPlayer() && creatureId == 1860)
+                {
+                    SetCreateResistance(SPELL_SCHOOL_NORMAL, int32(pInfo->armor + warlock_armor* 1.05));
+                }
+                else if(owner->IsPlayer() && creatureId == 1863)
+                {
+                    SetCreateResistance(SPELL_SCHOOL_NORMAL, int32(pInfo->armor + warlock_armor * 1.05));
+                }
+                else if(owner->IsPlayer() && creatureId == 417)
+                {
+                    SetCreateResistance(SPELL_SCHOOL_NORMAL, int32(pInfo->armor + warlock_armor * 1.05));
+                }
+                else
+                {
+                    SetCreateResistance(SPELL_SCHOOL_NORMAL, int32(pInfo->armor));
+                }
             else
                 SetCreateResistance(SPELL_SCHOOL_NORMAL, pCLS->armor * cinfo->armor_multiplier);
 
             if (pInfo)                                      // exist in DB
             {
-                SetCreateHealth(pInfo->health * healthMod);
-                SetCreateMana(pInfo->mana);
+                if(owner->IsPlayer() && creatureId == 416)
+                {
+                    SetCreateHealth((pInfo->health + warlock_max_hp * 1.05) * healthMod);
+                    SetCreateMana(pInfo->mana + warlock_max_mp);
+                }
+                else if(owner->IsPlayer() && creatureId == 1860)
+                {
+                    SetCreateHealth((pInfo->health + warlock_max_hp) * healthMod);
+                    SetCreateMana(pInfo->mana + warlock_max_mp * 1.05);
+                }
+                else if(owner->IsPlayer() && creatureId == 1863)
+                {
+                    SetCreateHealth((pInfo->health + warlock_max_hp * 1.05) * healthMod);
+                    SetCreateMana(pInfo->mana + warlock_max_mp * 1.05);
+                }
+                else if(owner->IsPlayer() && creatureId == 417)
+                {
+                    SetCreateHealth((pInfo->health + warlock_max_hp * 1.05) * healthMod);
+                    SetCreateMana(pInfo->mana + warlock_max_mp * 1.05);
+                }
+                else
+                {
+                    SetCreateHealth(pInfo->health * healthMod);
+                    SetCreateMana(pInfo->mana);
+                }
 
                 for (int stat = 0; stat < MAX_STATS; ++stat)
                     SetCreateStat(Stats(stat), float(pInfo->stats[stat]));
@@ -1407,17 +1478,26 @@ bool Pet::InitStatsForLevel(uint32 petlevel, Unit const* owner)
         }
         case HUNTER_PET:
         {
+          //  Unit* owner = GetOwner();  //继承主人属性
+            uint64 hunter_ranged_ap = owner->GetTotalAttackPowerValue(RANGED_ATTACK);  //继承攻强
+            uint64 hunter_max_hp = owner->GetMaxHealth();     //继承血量
+            uint64 hunter_armor = owner->GetArmor();    //继承护甲
+            uint64 hunter_level = owner->GetLevel();
+
             SetUInt32Value(UNIT_FIELD_PETNEXTLEVELEXP, sObjectMgr.GetXPForPetLevel(petlevel));
             // Formulas reviewed by Clank <Nostalrius>, from vanilla pet tab screenshots.
-            SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float(damageMod * (petlevel * 1.15 * 1.05) * (float)GetAttackTime(BASE_ATTACK) / 2000));
-            SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(damageMod * (petlevel * 1.45 * 1.05) * (float)GetAttackTime(BASE_ATTACK) / 2000));
+           // SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float(damageMod * (petlevel * 1.15 * 1.05) * (float)GetAttackTime(BASE_ATTACK) / 2000));
+           // SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(damageMod * (petlevel * 1.45 * 1.05) * (float)GetAttackTime(BASE_ATTACK) / 2000));
+            SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float(damageMod * (petlevel * 1.15 * 1.05 + hunter_ranged_ap / 7) * (float)GetAttackTime(BASE_ATTACK) / 2000));    //继承攻强
+            SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(damageMod * (petlevel * 1.45 * 1.05 + hunter_ranged_ap / 7) * (float)GetAttackTime(BASE_ATTACK) / 2000));   //继承攻强
 
             //stored standard pet stats are entry 1 in pet_levelinfo
             PetLevelInfo const* pInfo = sObjectMgr.GetPetLevelInfo(creatureId, petlevel);
             if (pInfo)                                      // exist in DB
             {
-                SetCreateHealth(pInfo->health * healthMod);
-                SetCreateResistance(SPELL_SCHOOL_NORMAL, int32(pInfo->armor));
+                SetCreateHealth((pInfo->health + hunter_max_hp * 5.45) * healthMod);   //继承血量
+                SetCreateResistance(SPELL_SCHOOL_NORMAL, int32(pInfo->armor + hunter_armor * 14.5 * 10.5));   //继承护甲
+                //SetModifierValue(UNIT_MOD_ATTACK_POWER, BASE_VALUE, float(cinfo->attack_power));
 
                 for (int i = STAT_STRENGTH; i < MAX_STATS; ++i)
                     SetCreateStat(Stats(i),  float(pInfo->stats[i]));

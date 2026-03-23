@@ -1,4 +1,4 @@
-/* Copyright (C) 2009 - 2010 ScriptDevZero <http://github.com/scriptdevzero/scriptdevzero>
+﻿/* Copyright (C) 2009 - 2010 ScriptDevZero <http://github.com/scriptdevzero/scriptdevzero>
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -16,6 +16,7 @@
 
 #include "scriptPCH.h"
 #include "blackwing_lair.h"
+#pragma execution_character_set("utf-8")
 
 static const Position EggSpawnCoords[] =
 {
@@ -439,9 +440,13 @@ struct instance_blackwing_lair : public ScriptedInstance
                 if (m_auiEncounter[TYPE_RAZORGORE] == FAIL)
                 {
                     if (Creature* pRazorgore = instance->GetCreature(m_auiData[DATA_RAZORGORE_GUID]))
+
                     {
                         DoScriptText(SAY_DEATH, pRazorgore);
                     }
+
+              //          pRazorgore->MonsterYell("如果我要落入地狱，那么你们这些凡人也要跟我同去！",0,0);
+
                 }
                 break;
             }
@@ -995,18 +1000,33 @@ struct go_egg_razAI: public GameObjectAI
                 switch (urand(0, 5))
                 {
                     case 0:
+
                     {
                         DoScriptText(SAY_EGGS_BROKEN_1, pUser);
+
+               //         pUser->MonsterYell("不！住手！我要你的头颅来弥补你的罪行！", LANG_UNIVERSAL);
+               //         pUser->PlayDirectSound(8277);
+
                         break;
                     }
                     case 1:
+
                     {
                         DoScriptText(SAY_EGGS_BROKEN_2, pUser);
+
+                    //    pUser->MonsterYell("蠢货！这些蛋比你认为的要珍贵的多！", LANG_UNIVERSAL);
+                    //    pUser->PlayDirectSound(8276);
+
                         break;
                     }
                     case 2:
+
                     {
                         DoScriptText(SAY_EGGS_BROKEN_3, pUser);
+
+                  //      pUser->MonsterYell("你要为强迫我这么做而付出代价！", LANG_UNIVERSAL);
+                   //     pUser->PlayDirectSound(8275);
+
                         break;
                     }
                 }

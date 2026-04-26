@@ -1065,7 +1065,7 @@ void CombatBotBaseAI::PopulateSpellData()
                     if (IsHigherRankSpell(m_spells.warrior.pDefensiveStance))
                         m_spells.warrior.pDefensiveStance = pSpellEntry;
                 }
-                else if (pSpellEntry->SpellName[0].find("Charge") != std::string::npos)
+                else if (pSpellEntry->SpellName[0] == "Charge")
                 {
                     if (IsHigherRankSpell(m_spells.warrior.pCharge))
                         m_spells.warrior.pCharge = pSpellEntry;
@@ -1797,7 +1797,7 @@ void CombatBotBaseAI::PopulateSpellData()
                 }
                 return pHighestRank;
             };
-            
+
             SpellEntry const* pPoisonSpell = nullptr;
             std::vector<SpellEntry const*> vPoisons;
             if (hasDeadlyPoison && (pPoisonSpell = GetHighestRankOfPoisonByName("Deadly Poison", me->GetLevel())))
@@ -2225,7 +2225,7 @@ bool CombatBotBaseAI::IsValidBuffTarget(Unit const* pTarget, SpellEntry const* p
             if (it == i.first)
                 return false;
     }
-        
+
     return true;
 }
 
@@ -2249,6 +2249,61 @@ Player* CombatBotBaseAI::SelectBuffTarget(SpellEntry const* pSpellEntry) const
     }
 
     return nullptr;
+}
+
+Player* CombatBotBaseAI::SelectBuffTarget(SpellEntry const* pSingleSpellEntry, SpellEntry const* pGroupSpellEntry, SpellEntry const*& pSelectedSpellEntry) const
+{
+    pSelectedSpellEntry = nullptr;
+
+    if (!pSingleSpellEntry && !pGroupSpellEntry)
+        return nullptr;
+
+    if (!pSingleSpellEntry)
+    {
+        pSelectedSpellEntry = pGroupSpellEntry;
+        return SelectBuffTarget(pGroupSpellEntry);
+    }
+
+    if (!pGroupSpellEntry)
+    {
+        pSelectedSpellEntry = pSingleSpellEntry;
+        return SelectBuffTarget(pSingleSpellEntry);
+    }
+
+    Player* pFirstMissingMember = nullptr;
+    uint8 missingMemberCount = 0;
+    Group* pGroup = me->GetGroup();
+    if (pGroup)
+    {
+        for (GroupReference* itr = pGroup->GetFirstMember(); itr != nullptr; itr = itr->next())
+        {
+            if (Player* pMember = itr->getSource())
+            {
+                if (!me->IsValidHelpfulTarget(pMember) ||
+                    pMember->IsGameMaster() ||
+                    !me->IsWithinLOSInMap(pMember) ||
+                    !me->IsWithinDist(pMember, 30.0f) ||
+                    !IsValidBuffTarget(pMember, pSingleSpellEntry) ||
+                    !IsValidBuffTarget(pMember, pGroupSpellEntry))
+                    continue;
+
+                if (!pFirstMissingMember)
+                    pFirstMissingMember = pMember;
+
+                ++missingMemberCount;
+                if (missingMemberCount > 1)
+                {
+                    pSelectedSpellEntry = pGroupSpellEntry;
+                    return pFirstMissingMember;
+                }
+            }
+        }
+    }
+
+    if (missingMemberCount == 1)
+        pSelectedSpellEntry = pSingleSpellEntry;
+
+    return pFirstMissingMember;
 }
 
 Player* CombatBotBaseAI::SelectDispelTarget(SpellEntry const* pSpellEntry) const
@@ -2647,7 +2702,7 @@ void CombatBotBaseAI::EquipRandomGearInEmptySlots()
     for (auto& itr : itemsPerSlot)
     {
         bool hasPrimaryStatItem = false;
-        
+
         for (auto const& pItem : itr.second)
         {
             for (auto const& stat : pItem->ItemStat)
@@ -2891,8 +2946,8 @@ void CombatBotBaseAI::AddHunterAmmo()
                     AddItemToInventory(pAmmoProto->ItemId, pAmmoProto->GetMaxStackSize());
                     me->SetAmmo(pAmmoProto->ItemId);
                 }
-            }  
-        }  
+            }
+        }
     }
 }
 
@@ -3185,14 +3240,14 @@ void CombatBotBaseAI::SendBattlefieldPortPacket()
 {
     for (uint32 i = BATTLEGROUND_QUEUE_AV; i <= BATTLEGROUND_QUEUE_AB; i++)
     {
-        if (me->IsInvitedForBattleGroundQueueType(BattleGroundQueueTypeId(i)))
+        if (me->IsInvitedForBattleGroundQueueType(static_cast<BattleGroundQueueTypeId>(i)))
         {
-            WorldPacket data(CMSG_BATTLEFIELD_PORT);
+            WorldPackets::Battleground::BattleFieldPort packet;
 #if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_8_4
-            data << uint32(GetBattleGrounMapIdByTypeId(BattleGroundTypeId(i)));
+            packet.mapId = GetBattleGrounMapIdByTypeId(static_cast<BattleGroundTypeId>(i));
 #endif
-            data << uint8(1);
-            me->GetSession()->HandleBattleFieldPortOpcode(data);
+            packet.action = 1;
+            me->GetSession()->HandleBattleFieldPortOpcode(packet);
             break;
         }
     }
@@ -3200,19 +3255,18 @@ void CombatBotBaseAI::SendBattlefieldPortPacket()
 
 void CombatBotBaseAI::SendBattlemasterJoinPacket(uint8 battlegroundId)
 {
-    WorldPacket data(CMSG_BATTLEFIELD_JOIN);
-    data << me->GetObjectGuid();                       // battlemaster guid, or player guid if joining queue from BG portal
-
+    uint32 instanceId = 0; // first available
+    uint32 mapId;
     switch (battlegroundId)
     {
         case BATTLEGROUND_QUEUE_AV:
-            data << uint32(MAP_ALTERAC_VALLEY);
+            mapId = MAP_ALTERAC_VALLEY;
             break;
         case BATTLEGROUND_QUEUE_WS:
-            data << uint32(MAP_WARSONG_GULCH);
+            mapId = MAP_WARSONG_GULCH;
             break;
         case BATTLEGROUND_QUEUE_AB:
-            data << uint32(MAP_ARATHI_BASIN);
+            mapId = MAP_ARATHI_BASIN;
             break;
         default:
             sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "BattleBot: Invalid BG queue type!");
@@ -3220,16 +3274,14 @@ void CombatBotBaseAI::SendBattlemasterJoinPacket(uint8 battlegroundId)
             return;
     }
 
-    data << uint32(0);                                 // instance id, 0 if First Available selected
-    data << uint8(0);                                  // join as group
-    me->GetSession()->HandleBattlemasterJoinOpcode(data);
+    me->GetSession()->RequestBgJoinQueue(me->GetObjectGuid(), instanceId, mapId, false);
 }
 
 void CombatBotBaseAI::SendAreaTriggerPacket(uint32 areaTriggerId)
 {
-    WorldPacket data(CMSG_AREATRIGGER);
-    data << uint32(areaTriggerId);
-    me->GetSession()->HandleAreaTriggerOpcode(data);
+    WorldPackets::Misc::AreaTrigger packet;
+    packet.triggerId = areaTriggerId;
+    me->GetSession()->HandleAreaTriggerOpcode(packet);
 }
 
 void CombatBotBaseAI::ActivateNearbyAreaTrigger()
@@ -3259,7 +3311,7 @@ void CombatBotBaseAI::OnPacketReceived(WorldPacket const* packet)
             if (!me)
                 return;
 
-            std::unique_ptr<WorldPacket> data = std::make_unique<WorldPacket>(MSG_MOVE_WORLDPORT_ACK);
+            auto data = std::make_unique<NullClientPacket>(MSG_MOVE_WORLDPORT_ACK);
             me->GetSession()->QueuePacket(std::move(data));
             break;
         }
@@ -3268,12 +3320,12 @@ void CombatBotBaseAI::OnPacketReceived(WorldPacket const* packet)
             if (!me)
                 return;
 
-            std::unique_ptr<WorldPacket> data = std::make_unique<WorldPacket>(MSG_MOVE_TELEPORT_ACK);
-            *data << me->GetObjectGuid();
+            auto data = std::make_unique<WorldPackets::Movement::MoveTeleportAck>();
+            data->guid = me->GetObjectGuid();
 #if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_9_4
-            *data << me->GetLastCounterForMovementChangeType(TELEPORT);
+            data->movementCounter = me->GetLastCounterForMovementChangeType(TELEPORT);
 #endif
-            *data << uint32(time(nullptr));
+            data->time = uint32(time(nullptr));
             me->GetSession()->QueuePacket(std::move(data));
             break;
         }
@@ -3293,13 +3345,12 @@ void CombatBotBaseAI::OnPacketReceived(WorldPacket const* packet)
             uint32 status = *((uint32*)(*packet).contents());
             if (status == TRADE_STATUS_BEGIN_TRADE)
             {
-                std::unique_ptr<WorldPacket> data = std::make_unique<WorldPacket>(CMSG_BEGIN_TRADE);
+                auto data = std::make_unique<NullClientPacket>(CMSG_BEGIN_TRADE);
                 me->GetSession()->QueuePacket(std::move(data));
             }
             else if (status == TRADE_STATUS_TRADE_ACCEPT)
             {
-                std::unique_ptr<WorldPacket> data = std::make_unique<WorldPacket>(CMSG_ACCEPT_TRADE);
-                *data << uint32(1);
+                auto data = std::make_unique<WorldPackets::Trade::AcceptTrade>();
                 me->GetSession()->QueuePacket(std::move(data));
             }
             else if (status == TRADE_STATUS_TRADE_COMPLETE)
@@ -3314,9 +3365,9 @@ void CombatBotBaseAI::OnPacketReceived(WorldPacket const* packet)
             if (!me)
                 return;
 
-            std::unique_ptr<WorldPacket> data = std::make_unique<WorldPacket>(CMSG_RESURRECT_RESPONSE);
-            *data << me->GetResurrector();
-            *data << uint8(1);
+            auto data = std::make_unique<WorldPackets::Misc::ResurrectResponse>();
+            data->resurrectorGuid = me->GetResurrector();
+            data->accept = true;
             me->GetSession()->QueuePacket(std::move(data));
             break;
         }
@@ -3348,10 +3399,10 @@ void CombatBotBaseAI::OnPacketReceived(WorldPacket const* packet)
             uint64 guid = *((uint64*)(*packet).contents());
             uint32 slot = *(((uint32*)(*packet).contents()) + 2);
 
-            std::unique_ptr<WorldPacket> data = std::make_unique<WorldPacket>(CMSG_LOOT_ROLL);
-            *data << uint64(guid);
-            *data << uint32(slot);
-            *data << uint8(0); // pass
+            auto data = std::make_unique<WorldPackets::Loot::LootRoll>();
+            data->lootedTarget = ObjectGuid(guid);
+            data->itemSlot = slot;
+            data->rollType = ROLL_PASS;
             me->GetSession()->QueuePacket(std::move(data));
             return;
         }

@@ -327,7 +327,9 @@ void World::AddSession_(WorldSession* s)
     packet << uint32(0);                                    // BillingTimeRemaining
                                                             // BillingPlanFlags
     packet << uint8(s->HasTrialRestrictions() ? (BILLING_FLAG_TRIAL | BILLING_FLAG_RESTRICTED) : BILLING_FLAG_NONE);
+#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_7_1
     packet << uint32(0);                                    // BillingTimeRested
+#endif
     s->SendPacket(&packet);
 
     UpdateMaxSessionCounters();
@@ -374,7 +376,9 @@ void World::AddQueuedSession(WorldSession* sess)
     packet << uint32(0);                                    // BillingTimeRemaining
                                                             // BillingPlanFlags
     packet << uint8(sess->HasTrialRestrictions() ? (BILLING_FLAG_TRIAL | BILLING_FLAG_RESTRICTED) : BILLING_FLAG_NONE);
+#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_7_1
     packet << uint32(0);                                    // BillingTimeRested
+#endif
     packet << uint32(GetQueuedSessionPos(sess));            // position in queue
     sess->SendPacket(&packet);
 
@@ -507,8 +511,7 @@ void World::LoadConfigSettings(bool reload)
     setConfigMin(CONFIG_FLOAT_RATE_XP_PERSONAL_MIN,      "Rate.XP.Personal.Min", 1.0f, 0.0f);
     setConfigMin(CONFIG_FLOAT_RATE_XP_PERSONAL_MAX,      "Rate.XP.Personal.Max", 1.0f, 0.0f);
     setConfig(CONFIG_FLOAT_RATE_REPUTATION_GAIN,           "Rate.Reputation.Gain", 1.0f);
-    setConfig(CONFIG_FLOAT_RATE_REPUTATION_LOWLEVEL_KILL,  "Rate.Reputation.LowLevel.Kill", 1.0f);
-    setConfig(CONFIG_FLOAT_RATE_REPUTATION_LOWLEVEL_QUEST, "Rate.Reputation.LowLevel.Quest", 1.0f);
+    setConfig(CONFIG_FLOAT_RATE_REPUTATION_LOWLEVEL_KILL,  "Rate.Reputation.LowLevel.Kill", 0.2f);
     setConfigPos(CONFIG_FLOAT_RATE_CREATURE_NORMAL_DAMAGE,               "Rate.Creature.Normal.Damage", 1.0f);
     setConfigPos(CONFIG_FLOAT_RATE_CREATURE_ELITE_ELITE_DAMAGE,          "Rate.Creature.Elite.Elite.Damage", 1.0f);
     setConfigPos(CONFIG_FLOAT_RATE_CREATURE_ELITE_RAREELITE_DAMAGE,      "Rate.Creature.Elite.RAREELITE.Damage", 1.0f);
@@ -1089,7 +1092,7 @@ void World::LoadConfigSettings(bool reload)
     setConfig(CONFIG_BOOL_ACCURATE_PVP_TIMELINE, "PvP.AccurateTimeline", true);
     setConfig(CONFIG_BOOL_ACCURATE_PVP_REWARDS, "PvP.AccurateRewards", true);
     setConfig(CONFIG_BOOL_ENABLE_DK, "PvP.DishonorableKills", true);
-    setConfig(CONFIG_BOOL_ENABLE_CITY_PROTECTOR, "PvP.CityProtector", true);
+    setConfig(CONFIG_BOOL_ENABLE_CITY_PROTECTOR, "PvP.CityProtector", false);
 
     // Progression settings
     setConfig(CONFIG_BOOL_ACCURATE_PETS, "Progression.AccuratePetStatistics", true);
@@ -2756,14 +2759,22 @@ void World::ShutdownCancel()
 // Send a server message to the user(s)
 void World::SendServerMessage(ServerMessageType type, char const* text, Player* player)
 {
-    WorldPacket data(SMSG_SERVER_MESSAGE, 50);              // guess size
-    data << uint32(type);
-    data << text;
+    auto packet = std::make_unique<WorldPackets::Misc::ServerMessage>();
+    packet->messageType = static_cast<uint32>(type);
+    packet->text = text;
 
     if (player)
-        player->GetSession()->SendPacket(&data);
+    {
+        player->GetSession()->SendPacket(std::move(packet));
+    }
     else
+    {
+        // TODO Use broadcaster which does the binary conversion automatically
+        WorldPacket data;
+        data.SetOpcode(packet->GetOpcode());
+        packet->AppendBodyTo(data);
         SendGlobalMessage(&data);
+    }
 }
 
 void World::UpdateSessions(uint32 diff)
@@ -3226,12 +3237,4 @@ uint32 World::GetDelayUntilNextSpellBatchingInterval()
         return 0;
 
     return (getConfig(CONFIG_UINT32_SPELL_EFFECT_DELAY) - (WorldTimer::getMSTime() % getConfig(CONFIG_UINT32_SPELL_EFFECT_DELAY)));
-}
-
-void SessionPacketSendTask::operator()()
-{
-    if (WorldSession* session = sWorld.FindSession(m_accountId))
-    {
-        session->SendPacket(&m_data);
-    }
 }
